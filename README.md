@@ -1,14 +1,14 @@
-# DevDeck - Philips Hue integration
+# DevDeck - Toggl integration
 
 ![CI](https://github.com/nicdumz/devdeck-hue/workflows/CI/badge.svg?branch=main)
 
-Philips Hue light controls for [DevDeck](https://github.com/jamesridgway/devdeck).
+[Toggl](https://toggl.com) controls for [DevDeck](https://github.com/jamesridgway/devdeck).
 
 ## Installing
 
-Simply install _DevDeck - Hue_ into the same python environment that you have installed DevDeck.
+Simply install _DevDeck - Toggl into the same python environment that you have installed DevDeck.
 
-    pip install devdeck-hue
+    pip install devdeck-toggl
 
 You can then update your DevDeck configuration to use decks and controls from this package.
 
@@ -16,26 +16,19 @@ You can then update your DevDeck configuration to use decks and controls from th
 
 - `toggle.Toggle`
 
-  Can be used to toggle on/off a Philips Hue lamp.
-
-- `brightness.Increase`
-
-  Can be use to increase light brightness by a static amount.
-
-- `brightness.Decrease`
-
-  Can be use to decrease light brightness by a static amount.
+  Can be used to toggle on/off a time entry.
+  Default behavior toggles the last time entry.
+  TODO: extend settings so we define which project/time entry that should be.
 
 ## One-time setup
 
-The `phue` module which is used under the hood requires a one-time pairing with
-the Hue bridge, once. Easiest way to do this is:
+The `toggl` module which is used under the hood requires saving locally an API token for Toggl, once.  Easiest way to do this is:
 
 ```
-python3 -m phue --host 192.168.1.42
+toggl ls
 ```
 
-Where `--host` is the IP of the Hue bridge.
+Which will bring up a configuration wizard.
 
 ## Configuration
 
@@ -46,27 +39,5 @@ Example configuration:
         name: devdeck.decks.single_page_deck_controller.SinglePageDeckController
         settings:
           controls:
-            - name: devdeck_hue.toggle.Toggle
+            - name: devdeck_toggl.toggle.Toggle
               key: 0
-              settings:
-                host: 192.168.1.23
-                light_id: 4
-            - name: devdeck_hue.brightness.Increase
-              key: 1
-              settings:
-                host: 192.168.1.23
-                light_id: 4
-                step: 20
-            - name: devdeck_hue.brightness.Decrease
-              key: 1
-              settings:
-                host: 192.168.1.23
-                light_id: 4
-                step: 20
-
-`light_id` is the light ID from the hue bridge. A simply way to list connected
-lights by id is to run the following Python snippet:
-
-```
-python3 -c 'import phue; b=phue.Bridge(); b.connect(); print(b.get_light_objects(mode="id"))'
-```
