@@ -1,6 +1,7 @@
 """Toggl basic Toggle control for DevDeck."""
+import time
 import threading
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from toggl import api
 
@@ -20,19 +21,21 @@ class Toggle(DeckControl):
 
     @property
     def task_entry(self):
+        """running time entry."""
         return api.TimeEntry.objects.current()
 
-    @property
-    def worked(self):
-        """timedelta of time worked today."""
+    def _worked(self, entry):
+        """time worked today in seconds."""
         day_start = datetime.today().replace(hour=0, minute=0, microsecond=0)
-        return sum(
+        worked = sum(
             (
                 e.duration
                 for e in api.TimeEntry.objects.all_from_reports(start=day_start)
-            ),
-            start=timedelta(),
+            )
         )
+        if entry:
+            worked += int(time.time()) + entry.duration
+        return worked
 
     def pressed(self):
         current = self.task_entry
@@ -52,23 +55,26 @@ class Toggle(DeckControl):
     def _update_display(self):
         with self.lock:
             with self.deck_context() as context:
-                worked = self.worked
-                running = self.task_entry is not None
+                entry = self.task_entry
+                worked = self._worked(entry)
+                hours = worked // 3600
+                minutes = (worked % 3600) // 60
+                running = entry is not None
                 state = "working" if running else "off"
-                color = "green" if running else "white"
+                color = "orange" if running else "white"
 
                 with context.renderer() as r:
-                    r.text(f"{worked.hours:02}:{worked.minutes:02}")\
+                    r.text(f"{hours:02}:{minutes:02}")\
                         .color(color) \
                         .center_horizontally() \
                         .center_vertically(-100) \
-                        .font_size(150)\
+                        .font_size(150) \
                         .end()
                     r.text(state) \
                         .color(color) \
                         .center_horizontally() \
                         .center_vertically(100) \
-                        .font_size(75) \
+                        .font_size(100) \
                         .end()
 
     def dispose(self):

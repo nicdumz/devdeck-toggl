@@ -1,2 +1,2 @@
 devdeck-core==1.0.8
-toggl==3.0.2
+togglCli==3.0.2
